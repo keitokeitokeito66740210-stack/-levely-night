@@ -259,3 +259,7 @@ a{
 .mission-editor-item textarea{resize:vertical;min-height:96px;line-height:1.5}
 .mission-editor-item .ed-reset{width:100%;margin-top:8px}
 @media(max-width:600px){.editor-toolbar,.editor-actions{grid-template-columns:1fr}}
+
+/* v2.8.1 STANDALONE MISSION EDITOR */
+.standalone-editor{max-width:920px;margin:0 auto}
+.standalone-editor .mission-editor-list{max-height:none;overflow:visible}

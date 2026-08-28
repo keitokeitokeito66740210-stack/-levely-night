@@ -428,6 +428,11 @@ function renderPlayerLists(){
   if($('editorSearch')) $('editorSearch').oninput=()=>{syncEditor();renderEditor();};
   if($('editorSaveAll')) $('editorSaveAll').onclick=saveEditor;
   if($('editorResetAll')) $('editorResetAll').onclick=resetEditor;
+  if($('openMissionEditorPage')) $('openMissionEditorPage').onclick=()=>{
+    const code=state.room?.code||new URLSearchParams(location.search).get('staff')||'';
+    const url=`${location.origin}${location.pathname.replace(/[^/]*$/,'')}mission-editor.html${code?`?staff=${encodeURIComponent(code)}`:''}`;
+    location.href=url;
+  };
   if($('hostStaffBtn')) $('hostStaffBtn').onclick=()=>{
     if(!state.room) return alert('ROOMがまだ作成されていません。');
     const url=`${location.origin}${location.pathname}?staff=${encodeURIComponent(state.room.code)}`;

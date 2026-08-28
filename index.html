@@ -88,21 +88,10 @@
         <h1>TABLE<br>CONTROL</h1>
         <p id="staffRoomLabel">ROOM ------</p>
       </div>
-      <div class="card mission-editor-card">
+      <div class="card">
         <div class="eyebrow">MISSION EDITOR</div>
-        <p class="muted">ゲームで使う指令を編集・保存できます。OFFにした指令はランダム抽選から除外されます。</p>
-        <div class="editor-toolbar">
-          <select id="editorCategory">
-            <option value="all">ALL</option><option value="secret_mission">SECRET MISSIONS</option>
-          </select>
-          <input id="editorSearch" type="search" placeholder="指令を検索">
-        </div>
-        <div id="missionEditorList" class="mission-editor-list"><p class="muted">読み込み中…</p></div>
-        <div class="editor-actions">
-          <button id="editorSaveAll" class="primary">変更を保存</button>
-          <button id="editorResetAll" class="secondary">すべて初期状態に戻す</button>
-        </div>
-        <p id="editorStatus" class="note"></p>
+        <p class="muted">指令の編集・ON/OFFは専用ページで管理できます。</p>
+        <button class="primary" id="openMissionEditorPage">MISSION EDITORを開く</button>
       </div>
 
       <div class="card">
@@ -178,7 +167,7 @@
   <div id="toast" class="toast"></div>
   <script src="./config.js"></script>
   <script src="./scenarios.js?v=251"></script>
-  <script src="./app.js?v=280"></script>
+  <script src="./app.js?v=281"></script>
 
   <div id="rulesModal" class="rules-modal hidden" aria-hidden="true">
     <div class="rules-sheet">

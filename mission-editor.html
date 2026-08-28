@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <title>BAR LEVELY | Mission Editor</title>
+  <link rel="stylesheet" href="./styles.css?v=281">
+</head>
+<body>
+  <main class="app-shell">
+    <header class="topbar">
+      <div>
+        <div class="brand">BAR LEVELY</div>
+        <div class="muted">MISSION EDITOR</div>
+      </div>
+      <button class="secondary" id="backStaffBtn">← STAFF</button>
+    </header>
+
+    <section class="screen active">
+      <div class="card mission-editor-card standalone-editor">
+        <div class="eyebrow">MISSION EDITOR</div>
+        <h2>指令を編集</h2>
+        <p class="muted">文章を書き換えて保存できます。OFFにした指令はランダム抽選・スタッフ選択肢から除外されます。</p>
+
+        <div class="editor-toolbar">
+          <select id="editorCategory">
+            <option value="all">ALL</option>
+            <option value="secret_mission">SECRET MISSIONS</option>
+          </select>
+          <input id="editorSearch" type="search" placeholder="指令を検索">
+        </div>
+
+        <div id="missionEditorList" class="mission-editor-list">
+          <p class="muted">読み込み中…</p>
+        </div>
+
+        <div class="editor-actions">
+          <button id="editorSaveAll" class="primary">変更を保存</button>
+          <button id="editorResetAll" class="secondary">すべて初期状態に戻す</button>
+        </div>
+        <p id="editorStatus" class="note"></p>
+      </div>
+    </section>
+  </main>
+
+  <script src="./config.js"></script>
+  <script src="./scenarios.js"></script>
+  <script src="./mission-editor.js?v=281"></script>
+</body>
+</html>
