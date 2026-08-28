@@ -263,3 +263,12 @@ a{
 /* v2.8.1 STANDALONE MISSION EDITOR */
 .standalone-editor{max-width:920px;margin:0 auto}
 .standalone-editor .mission-editor-list{max-height:none;overflow:visible}
+
+/* v2.9 GAME ELAPSED TIMER */
+.game-time-pill{font-variant-numeric:tabular-nums;letter-spacing:.08em}
+.staff-game-time{
+  min-height:64px;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  border:1px solid rgba(77,163,255,.32);border-radius:14px;background:rgba(7,26,61,.78);
+}
+.staff-game-time span{font-size:10px;letter-spacing:.16em;color:#7eb8ff;font-weight:800}
+.staff-game-time strong{font-size:24px;letter-spacing:.08em;font-variant-numeric:tabular-nums;color:#fff}

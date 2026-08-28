@@ -6,6 +6,28 @@
   const $ = (id) => document.getElementById(id);
   const views = ['setupView','hostView','playerView','staffView'];
   let state = { room:null, player:null, players:[], eventSub:null, lastEvent:null, recognition:null, voiceActive:false };
+  let gameClockTimer=null;
+
+  function elapsedText(){
+    const started=state.room?.started_at;
+    if(!started) return '00:00:00';
+    const ms=Math.max(0,Date.now()-new Date(started).getTime());
+    const total=Math.floor(ms/1000);
+    const h=Math.floor(total/3600);
+    const m=Math.floor((total%3600)/60);
+    const s=total%60;
+    return [h,m,s].map(v=>String(v).padStart(2,'0')).join(':');
+  }
+  function updateGameClock(){
+    const text=elapsedText();
+    if($('playerGameTime')) $('playerGameTime').textContent=text;
+    if($('staffGameTime')) $('staffGameTime').textContent=text;
+  }
+  function startGameClock(){
+    if(gameClockTimer) clearInterval(gameClockTimer);
+    updateGameClock();
+    gameClockTimer=setInterval(updateGameClock,1000);
+  }
 
   function showView(id){ views.forEach(v => $(v).classList.toggle('active', v===id)); }
   function toast(msg){ const el=$('toast'); el.textContent=msg; el.classList.add('show'); setTimeout(()=>el.classList.remove('show'),1800); }
@@ -228,12 +250,16 @@ function renderPlayerLists(){
 
   async function startGame(){
     if(state.players.length<2 && !confirm('参加者が2人未満です。このまま開始しますか？'))return;
-    await sb.from('rooms').update({phase:'mission',status:'live'}).eq('id',state.room.id);
+    const startedAt=new Date().toISOString();
+    const {data,error}=await sb.from('rooms').update({phase:'mission',status:'live',started_at:startedAt}).eq('id',state.room.id).select().single();
+    if(error) return alert('ゲームを開始できません: '+error.message);
+    state.room=data;
+    startGameClock();
     await pushEvent({id:'system',cat:'system',title:'LEVELY IS WATCHING',message:'ゲームが開始されました。各プレイヤーに秘密ミッションが届きます.'},false);
     toast('GAME START');
   }
 
-  function showPlayer(){ showView('playerView'); $('playerRoom').textContent='ROOM '+state.room.code; }
+  function showPlayer(){ showView('playerView'); $('playerRoom').textContent='ROOM '+state.room.code; startGameClock(); }
   function renderPlayer(){
     stopVoice();
     const phase=state.room?.phase||'waiting'; $('playerPhase').textContent=phase.toUpperCase();
@@ -243,7 +269,9 @@ function renderPlayerLists(){
       const kw=state.player?.mission_keyword||missionById(state.player?.mission_id)?.keyword;
       $('playerContent').innerHTML=`<div class="card reveal"><div class="eyebrow">SECRET MISSION / ${escapeHtml(state.player?.name||'')}</div><div class="mission">${escapeHtml(state.player?.mission||'ミッションを準備中…')}</div><p class="muted">他の人には見せないでください。成功しても自分から申告しないこと。</p>${kw?voiceControls(kw):''}</div><div class="card"><div class="eyebrow">LIVE</div><p class="muted">普通に飲んで会話してください。LEVELYから突然イベントが届きます。</p></div>`;
       bindVoiceButton();
-    } else if(phase==='final') renderFinal();
+    } else if(phase==='final') {
+      $('playerContent').innerHTML=`<div class="card center"><div class="eyebrow">GAME ENDED</div><h2>LEVELY NIGHT</h2><p class="muted">このゲームは終了しています。</p></div>`;
+    }
   }
 
   function voiceControls(keyword){
@@ -332,12 +360,6 @@ function renderPlayerLists(){
   async function staffEvent(cat){ const ev=byCategory(cat); await pushEvent(ev,true); toast(ev?.title||'EVENT'); }
   async function randomEvent(){ const ev=pick(enabledEvents()); await pushEvent(ev,true); toast('RANDOM / '+(ev?.title||'EVENT')); }
   async function fakeStaff(){ const list=enabledEvents().filter(e=>['staff','secret','social'].includes(e.cat)); const ev=pick(list); await pushEvent(ev,false); toast('FAKE EVENT'); }
-  async function finishGame(){ await sb.from('rooms').update({phase:'final',status:'finished'}).eq('id',state.room.id); await pushEvent({id:'final',cat:'final',title:'FINAL REVEAL',message:'LEVELY NIGHTの結果が確定しました。'},false); }
-  function renderFinal(){
-    const seed=state.players.length?state.players:[state.player].filter(Boolean); const names=seed.map(p=>p.name); const a=names[0]||'PLAYER';const b=names[1]||a;const c=names[2]||a;
-    $('playerContent').innerHTML=`<div class="card"><div class="eyebrow">LEVELY NIGHT / RESULT</div><div class="playerrow"><span>最も人を操った人</span><strong>${escapeHtml(a)}</strong></div><div class="playerrow"><span>最も操られた人</span><strong>${escapeHtml(b)}</strong></div><div class="playerrow"><span>最もスタッフを疑った人</span><strong>${escapeHtml(c)}</strong></div></div><div class="card reveal center"><div class="eyebrow">FINAL REVEAL</div><div class="mission">あなた達が「スタッフの指示」だと思ったイベントの一部は、スタッフとは無関係でした。</div><p class="muted">ただし、一部だけ本当にスタッフが操作していました。</p><h2>LEVEL 1 COMPLETE</h2></div>`;
-  }
-
   function voiceApi(){ return window.SpeechRecognition || window.webkitSpeechRecognition; }
   function toggleVoice(){ state.voiceActive ? stopVoice() : startVoice(); }
   function startVoice(){
@@ -361,7 +383,7 @@ function renderPlayerLists(){
   function normalize(s=''){ return String(s).toLowerCase().replace(/[\s　、。！？!?]/g,''); }
 
   function subscribePlayers(roomId){ sb.channel('players-'+roomId).on('postgres_changes',{event:'*',schema:'public',table:'players',filter:`room_id=eq.${roomId}`},()=>refreshPlayers()).subscribe(); }
-  function subscribeRoom(roomId){ sb.channel('room-'+roomId).on('postgres_changes',{event:'UPDATE',schema:'public',table:'rooms',filter:`id=eq.${roomId}`},payload=>{state.room=payload.new;if(state.player)renderPlayer();if(state.room.phase==='final')refreshPlayers();}).subscribe(); }
+  function subscribeRoom(roomId){ sb.channel('room-'+roomId).on('postgres_changes',{event:'UPDATE',schema:'public',table:'rooms',filter:`id=eq.${roomId}`},payload=>{state.room=payload.new;updateGameClock();if(state.player)renderPlayer();}).subscribe(); }
   function subscribeEvents(roomId){ state.eventSub=sb.channel('events-'+roomId).on('postgres_changes',{event:'INSERT',schema:'public',table:'events',filter:`room_id=eq.${roomId}`},payload=>renderIncomingEvent(payload.new)).subscribe(); }
   function renderStaffCurrentEvent(ev){
     const el=$('staffCurrentEvent'); if(!el||!ev)return;
@@ -389,6 +411,7 @@ function renderPlayerLists(){
     if(!room){ alert('ROOMが見つかりません: '+normalized); return; }
     state.room=room;
     showView('staffView');
+    startGameClock();
     $('staffRoomLabel').textContent='ROOM '+room.code;
     subscribePlayers(room.id);
     subscribeRoom(room.id);
@@ -419,7 +442,6 @@ function renderPlayerLists(){
   document.querySelectorAll('[data-event]').forEach(b=>b.onclick=()=>staffEvent(b.dataset.event));
   $('staffRandomBtn').onclick=randomEvent;
   $('staffFakeBtn').onclick=fakeStaff;
-  $('staffFinalBtn').onclick=finishGame;
   if($('staffAssignMission')) $('staffAssignMission').onclick=staffAssignSelectedMission;
   if($('staffEventCategory')) $('staffEventCategory').onchange=renderStaffEventControl;
   if($('staffSendSelectedEvent')) $('staffSendSelectedEvent').onclick=staffSendSelectedEvent;
