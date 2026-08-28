@@ -1,8 +1,10 @@
 (()=>{
   const $=id=>document.getElementById(id);
   const escapeHtml=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
-  if(!window.supabase||!window.LEVELY_CONFIG){ alert('Supabase設定を読み込めません。'); return; }
-  const sb=window.supabase.createClient(window.LEVELY_CONFIG.url,window.LEVELY_CONFIG.anonKey);
+  const cfg=window.LEVELY_CONFIG||{};
+  const configured=window.supabase && cfg.SUPABASE_URL && cfg.SUPABASE_ANON_KEY;
+  if(!configured){ alert('Supabase設定を読み込めません。config.js を確認してください。'); return; }
+  const sb=window.supabase.createClient(cfg.SUPABASE_URL,cfg.SUPABASE_ANON_KEY);
   const library=window.LEVELY_SCENARIOS||{missions:[],events:[]};
   const editor={rows:[]};
 
