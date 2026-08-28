@@ -312,6 +312,26 @@ function renderPlayerLists(){
   if($('staffAssignMission')) $('staffAssignMission').onclick=staffAssignSelectedMission;
   if($('staffEventCategory')) $('staffEventCategory').onchange=renderStaffEventControl;
   if($('staffSendSelectedEvent')) $('staffSendSelectedEvent').onclick=staffSendSelectedEvent;
+
+  function openRules(){
+    const modal=$('rulesModal');
+    if(!modal)return;
+    modal.classList.remove('hidden');
+    modal.setAttribute('aria-hidden','false');
+    document.body.style.overflow='hidden';
+  }
+  function closeRules(){
+    const modal=$('rulesModal');
+    if(!modal)return;
+    modal.classList.add('hidden');
+    modal.setAttribute('aria-hidden','true');
+    document.body.style.overflow='';
+  }
+  if($('rulesOpenBtn')) $('rulesOpenBtn').onclick=openRules;
+  if($('rulesCloseBtn')) $('rulesCloseBtn').onclick=closeRules;
+  if($('rulesCloseBottomBtn')) $('rulesCloseBottomBtn').onclick=closeRules;
+  if($('rulesModal')) $('rulesModal').onclick=(e)=>{if(e.target.id==='rulesModal')closeRules();};
+
   if($('staffCodeBtn')) $('staffCodeBtn').onclick=async()=>{
     const code=($('staffCodeInput')?.value||'').trim().toUpperCase();
     if(!code) return alert('ROOM CODEを入力してください。');

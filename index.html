@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
   <meta name="theme-color" content="#09090b" />
   <title>LEVELY NIGHT</title>
-  <link rel="stylesheet" href="./styles.css?v=252" />
+  <link rel="stylesheet" href="./styles.css?v=260" />
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
 </head>
@@ -28,6 +28,7 @@
       <div class="card">
         <h2>参加方法</h2>
         <button class="primary" id="createRoomBtn">新しいゲームを作る</button>
+        <button class="rules-link-btn" id="rulesOpenBtn">？ ゲームの遊び方・詳しいルール</button>
         <div class="staff-login-box">
           <div class="eyebrow">STAFF LOGIN</div>
           <input id="staffCodeInput" type="text" placeholder="ROOM CODE 例: LVAB12" autocomplete="off">
@@ -134,6 +135,38 @@
   <div id="toast" class="toast"></div>
   <script src="./config.js"></script>
   <script src="./scenarios.js?v=251"></script>
-  <script src="./app.js?v=251"></script>
+  <script src="./app.js?v=260"></script>
+
+  <div id="rulesModal" class="rules-modal hidden" aria-hidden="true">
+    <div class="rules-sheet">
+      <button id="rulesCloseBtn" class="rules-close" aria-label="閉じる">×</button>
+      <div class="eyebrow">LEVELY NIGHT / GAME GUIDE</div>
+      <h2>気づいた時には、ゲームは始まっている。</h2>
+      <p class="rules-lead">LEVELY NIGHTは、普通に飲んで喋りながら進むシークレットミッションゲーム。自分の指令を隠しつつ、店から突然届くイベントにも参加しよう。</p>
+
+      <div class="rules-block">
+        <span class="rules-no">01</span><div><h3>ROOMに参加</h3><p>QRからページを開き、スタッフから案内されたROOM CODEとニックネームを入力。参加後、自分だけのシークレットミッションが表示されます。</p></div>
+      </div>
+      <div class="rules-block">
+        <span class="rules-no">02</span><div><h3>秘密のミッションを狙う</h3><p>ミッションの内容は他の人に見せないこと。会話の流れに自然に混ぜながら、怪しまれずに達成を狙います。すぐ終わるとは限りません。</p></div>
+      </div>
+      <div class="rules-block">
+        <span class="rules-no">03</span><div><h3>突然のイベント</h3><p>ゲーム中はカラオケ、指差し、NGワード、投票、ゲリラ指令などが突然届きます。表示された内容をみんなで実行してください。</p></div>
+      </div>
+      <div class="rules-block">
+        <span class="rules-no">04</span><div><h3>スタッフもゲームの一部</h3><p>スタッフが本当に仕掛けた指令もあれば、ゲームがスタッフの仕業のように見せていることも。何が本物かは最後まで分かりません。</p></div>
+      </div>
+      <div class="rules-block">
+        <span class="rules-no">05</span><div><h3>バレないことも重要</h3><p>不自然な質問や行動を繰り返すと、他のプレイヤーにミッションを読まれるかも。普段通り楽しみながら動くのがコツです。</p></div>
+      </div>
+
+      <div class="rules-warning">
+        <strong>LEVELY RULE</strong>
+        <p>飲酒の強要は禁止。ドリンク指令はノンアルでもOKです。嫌な指令・危険な行動・迷惑になる行動はスキップしてOK。ゲームより、その場を楽しむことを優先してください。</p>
+      </div>
+      <button id="rulesCloseBottomBtn" class="primary">ゲームに戻る</button>
+    </div>
+  </div>
+
 </body>
 </html>
