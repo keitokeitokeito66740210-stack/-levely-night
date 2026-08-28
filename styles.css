@@ -74,3 +74,95 @@
   border:1px solid rgba(255,255,255,.18);
 }
 .staff-login-box button{width:100%;}
+
+
+/* ===== LEVELY BLUE THEME v2.5.2 ===== */
+:root{
+  --levely-blue:#1677ff;
+  --levely-blue-bright:#4da3ff;
+  --levely-blue-deep:#071a3d;
+  --levely-blue-glow:rgba(22,119,255,.32);
+  --levely-panel:rgba(7,26,61,.58);
+}
+
+body{
+  background:
+    radial-gradient(circle at 50% -10%, rgba(22,119,255,.28), transparent 38%),
+    radial-gradient(circle at 100% 45%, rgba(0,85,255,.12), transparent 32%),
+    #030812;
+}
+
+.eyebrow,.section-title{
+  color:var(--levely-blue-bright);
+}
+
+.card,.panel,.staff-mission-picker,.staff-event-picker,.staff-login-box{
+  border-color:rgba(77,163,255,.24);
+}
+
+.card,.panel,.staff-mission-picker,.staff-event-picker{
+  background:linear-gradient(180deg,rgba(10,32,72,.72),rgba(4,11,25,.78));
+  box-shadow:0 12px 40px rgba(0,0,0,.22),0 0 28px rgba(22,119,255,.06);
+}
+
+button.primary,.primary{
+  background:linear-gradient(135deg,var(--levely-blue-bright),var(--levely-blue));
+  color:#fff;
+  border-color:rgba(120,190,255,.55);
+  box-shadow:0 0 22px var(--levely-blue-glow);
+}
+
+button.primary:active,.primary:active{
+  transform:translateY(1px);
+  box-shadow:0 0 12px var(--levely-blue-glow);
+}
+
+button.secondary,.secondary,
+.event-btn,.staff-btn{
+  border-color:rgba(77,163,255,.32);
+  background:rgba(10,37,82,.66);
+}
+
+button.secondary:hover,.secondary:hover,
+.event-btn:hover,.staff-btn:hover{
+  border-color:rgba(77,163,255,.72);
+  background:rgba(18,67,145,.72);
+}
+
+input,select{
+  border-color:rgba(77,163,255,.30)!important;
+  background:#061124!important;
+}
+
+input:focus,select:focus{
+  outline:none;
+  border-color:var(--levely-blue-bright)!important;
+  box-shadow:0 0 0 3px rgba(22,119,255,.14);
+}
+
+.mission-status,.badge,.pill{
+  border-color:rgba(77,163,255,.42);
+  background:rgba(22,119,255,.14);
+}
+
+.staff-mission-label,.staff-keyword{
+  color:#79baff;
+}
+
+.staff-player-card{
+  border-color:rgba(77,163,255,.22);
+  background:rgba(5,18,42,.72);
+}
+
+#staffNowEvent,.now-event,.event-card{
+  border-color:rgba(77,163,255,.30);
+  box-shadow:inset 0 0 30px rgba(22,119,255,.04);
+}
+
+h1,h2,h3{
+  text-shadow:0 0 22px rgba(22,119,255,.12);
+}
+
+a{
+  color:#6db4ff;
+}
