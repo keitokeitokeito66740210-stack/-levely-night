@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <meta name="theme-color" content="#09090b" />
+  <title>LEVELY NIGHT</title>
+  <link rel="stylesheet" href="./styles.css" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+</head>
+<body>
+  <main class="app">
+    <header class="topbar">
+      <div>
+        <div class="brand">BAR LEVELY</div>
+        <div class="subbrand">LEVELY NIGHT / LIVE MVP</div>
+      </div>
+      <button class="ghost small" id="resetBtn">RESET</button>
+    </header>
+
+    <section id="setupView" class="view active">
+      <div class="hero">
+        <p class="kicker">THE BAR IS WATCHING</p>
+        <h1>LEVELY<br>NIGHT</h1>
+        <p>飲みに来ただけのはずが、店そのものにゲームへ巻き込まれる。</p>
+      </div>
+      <div class="card">
+        <h2>参加方法</h2>
+        <button class="primary" id="createRoomBtn">新しいゲームを作る</button>
+        <div class="divider"><span>OR</span></div>
+        <label>ROOM CODE</label>
+        <input id="joinCode" maxlength="6" inputmode="text" placeholder="例: LV8K2Q" autocomplete="off" />
+        <label>YOUR NAME</label>
+        <input id="joinName" maxlength="18" placeholder="ニックネーム" autocomplete="off" />
+        <button class="secondary" id="joinRoomBtn">ROOMに参加</button>
+      </div>
+      <div class="card subtle">
+        <div class="eyebrow">STAFF</div>
+        <p>スタッフ端末はURL末尾に <code>?staff=ROOMCODE</code> を付けると管理画面になります。</p>
+      </div>
+    </section>
+
+    <section id="hostView" class="view">
+      <div class="statusline">
+        <span class="pill" id="hostRoomCode">ROOM ------</span>
+        <span class="pill" id="hostCount">0 PLAYERS</span>
+      </div>
+      <div class="card center">
+        <div class="eyebrow">SCAN TO JOIN</div>
+        <div id="qr"></div>
+        <p class="roomcode" id="roomCodeBig">------</p>
+        <button class="ghost" id="copyLinkBtn">参加リンクを共有</button>
+      </div>
+      <div class="card">
+        <div class="eyebrow">PLAYERS</div>
+        <div id="hostPlayers" class="players"></div>
+      </div>
+      <button class="primary" id="startLiveBtn">ゲーム開始</button>
+      <p class="note">3〜6人推奨。開始後も途中参加できます。</p>
+    </section>
+
+    <section id="playerView" class="view">
+      <div class="statusline">
+        <span class="pill" id="playerRoom">ROOM ------</span>
+        <span class="pill accent" id="playerPhase">WAITING</span>
+      </div>
+      <div id="playerContent"></div>
+    </section>
+
+    <section id="staffView" class="view">
+      <div class="hero compact">
+        <p class="kicker">STAFF CONTROL</p>
+        <h1>TABLE<br>CONTROL</h1>
+        <p id="staffRoomLabel">ROOM ------</p>
+      </div>
+      <div class="card">
+        <div class="eyebrow">LIVE PLAYERS</div>
+        <div id="staffPlayers" class="players"></div>
+      </div>
+      <div class="card">
+        <div class="eyebrow">1-TAP INTERVENTION</div>
+        <div class="staffgrid">
+          <button data-event="karaoke">🎤<strong>KARAOKE</strong><span>曲終わりの協力ミッション</span></button>
+          <button data-event="attack">😈<strong>STAFF ATTACK</strong><span>本物の介入を発生</span></button>
+          <button data-event="order">🥃<strong>BLACK ORDER</strong><span>注文で特殊能力を付与</span></button>
+          <button data-event="chaos">💣<strong>CHAOS</strong><span>会話ルールを突然変更</span></button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="eyebrow">GAME CONTROL</div>
+        <div class="twocol">
+          <button class="secondary" id="staffFakeBtn">FAKE STAFF EVENT</button>
+          <button class="danger" id="staffFinalBtn">FINAL RESULT</button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="eyebrow">LIVE LOG</div>
+        <div id="staffLog" class="log"></div>
+      </div>
+    </section>
+  </main>
+
+  <div id="toast" class="toast"></div>
+  <script src="./config.js"></script>
+  <script src="./app.js"></script>
+</body>
+</html>
