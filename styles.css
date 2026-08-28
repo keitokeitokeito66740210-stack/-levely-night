@@ -204,3 +204,17 @@ a{
 .rules-warning strong{color:#62afff}
 .rules-warning p{margin:7px 0 0;font-size:12px;line-height:1.65;color:#c5d9ee}
 #rulesCloseBottomBtn{width:100%}
+
+
+/* ===== v2.7 SECRET WORD + HOST STAFF ACCESS ===== */
+.staff-secret-word,.host-staff-login{
+  margin:18px 0;padding:16px;border-radius:16px;
+  border:1px solid rgba(77,163,255,.25);
+  background:linear-gradient(180deg,rgba(8,31,70,.74),rgba(3,12,29,.78));
+}
+.staff-secret-word select,.staff-secret-word input{
+  width:100%;box-sizing:border-box;margin:8px 0;padding:12px;border-radius:10px;
+  color:#fff;background:#061124;border:1px solid rgba(77,163,255,.3);
+}
+.staff-secret-word button,.host-staff-login button{width:100%;margin-top:8px}
+.host-staff-login .muted{margin:5px 0 0}

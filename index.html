@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
   <meta name="theme-color" content="#09090b" />
   <title>LEVELY NIGHT</title>
-  <link rel="stylesheet" href="./styles.css?v=260" />
+  <link rel="stylesheet" href="./styles.css?v=270" />
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
 </head>
@@ -64,6 +64,13 @@
         <div id="hostPlayers" class="players"></div>
       </div>
       <button class="primary" id="startLiveBtn">ゲーム開始</button>
+      <div class="host-staff-login">
+        <div>
+          <div class="eyebrow">STAFF CONTROL</div>
+          <p class="muted">このROOMのスタッフ管理画面を開けます。</p>
+        </div>
+        <button class="secondary" id="hostStaffBtn">スタッフ画面を開く</button>
+      </div>
       <p class="note">3〜6人推奨。開始後も途中参加できます。</p>
     </section>
 
@@ -86,6 +93,25 @@
         <p class="muted">この情報はスタッフ端末だけに表示されます。</p>
         
           
+          <div class="staff-secret-word">
+            <div class="section-title">SECRET WORD TRAP</div>
+            <p class="muted">NGワードはスタッフだけが確認できます。プレイヤー側には「ある言葉を言ったら罰ゲーム」とだけ表示されます。</p>
+            <select id="staffSecretWord">
+              <option value="マジ">マジ</option>
+              <option value="やばい">やばい</option>
+              <option value="えぐい">えぐい</option>
+              <option value="ほんま">ほんま</option>
+              <option value="最高">最高</option>
+              <option value="かわいい">かわいい</option>
+              <option value="乾杯">乾杯</option>
+              <option value="うまい">うまい</option>
+              <option value="酔った">酔った</option>
+              <option value="知らん">知らん</option>
+            </select>
+            <input id="staffSecretWordCustom" type="text" maxlength="20" placeholder="または好きなNGワードを入力">
+            <button id="staffSecretWordBtn" class="primary">秘密のNGワードを発動</button>
+          </div>
+
           <div class="staff-event-picker">
             <div class="section-title">DIRECT EVENT CONTROL</div>
             <p class="muted">カラオケ・ゲリラ・指差し・NGワードなど、出したいイベントをスタッフが直接選んで送れます。今までのランダムボタンもそのまま使えます。</p>
@@ -135,7 +161,7 @@
   <div id="toast" class="toast"></div>
   <script src="./config.js"></script>
   <script src="./scenarios.js?v=251"></script>
-  <script src="./app.js?v=262"></script>
+  <script src="./app.js?v=270"></script>
 
   <div id="rulesModal" class="rules-modal hidden" aria-hidden="true">
     <div class="rules-sheet">

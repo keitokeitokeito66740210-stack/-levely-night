@@ -205,13 +205,33 @@ function renderPlayerLists(){
     const {error}=await sb.from('events').insert(row); if(error) alert(error.message);
   }
 
+  async function staffSecretWordTrap(){
+    if(!state.room) return alert('ROOMが読み込まれていません。');
+    const custom=($('staffSecretWordCustom')?.value||'').trim();
+    const selected=($('staffSecretWord')?.value||'').trim();
+    const keyword=custom||selected;
+    if(!keyword) return alert('NGワードを選択してください。');
+
+    const ev={
+      id:'secret-word-trap',
+      cat:'secret_word',
+      title:'SECRET WORD TRAP',
+      message:'このゲーム中、「ある言葉」がNGワードに指定された。その言葉を口にした人は罰ゲーム。NGワードの正体はスタッフだけが知っている。',
+      keyword
+    };
+    await pushEvent(ev,true);
+    if($('staffSecretWordCustom')) $('staffSecretWordCustom').value='';
+    toast('SECRET WORD / '+keyword);
+  }
+
   function renderIncomingEvent(ev){
     state.lastEvent={...ev,keyword:ev.keyword||null};
     if(state.player){
       stopVoice();
-      const sub=ev.is_real?'これは本当にスタッフが発動したイベントです。':'スタッフが関与したように見えますが、真相はまだ分かりません。';
-      const voice=ev.keyword?voiceControls(ev.keyword):'';
-      $('playerContent').innerHTML=`<div class="card reveal"><div class="eyebrow">${escapeHtml(ev.title)}</div><div class="mission">${escapeHtml(ev.message)}</div><p class="muted">${sub}</p>${voice}<button class="primary" id="eventAck">確認した</button></div>`;
+      const isSecretWord=ev.scenario_id==='secret-word-trap'||ev.type==='secret_word';
+      const voice=ev.keyword&&!isSecretWord?voiceControls(ev.keyword):'';
+      const safeTitle=isSecretWord?'HIDDEN WORD':'';
+      $('playerContent').innerHTML=`<div class="card reveal"><div class="eyebrow">${escapeHtml(safeTitle||ev.title)}</div><div class="mission">${escapeHtml(ev.message)}</div>${voice}<button class="primary" id="eventAck">確認した</button></div>`;
       setTimeout(()=>{ const b=$('eventAck'); if(b)b.onclick=renderPlayer; bindVoiceButton(); },0);
       navigator.vibrate?.([120,70,120]);
     }
@@ -261,7 +281,7 @@ function renderPlayerLists(){
   function logStaffEvent(ev){
     if(!$('staffLog')||!ev)return;
     const tm=new Date(ev.created_at||Date.now()).toLocaleTimeString('ja-JP',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
-    $('staffLog').innerHTML=`<div class="log-event"><div class="log-event-head">[${tm}] ${escapeHtml(ev.is_real?'REAL':'FAKE')} / ${escapeHtml(ev.title||'EVENT')}</div><div class="log-event-message">${escapeHtml(ev.message||'')}</div></div>`+$('staffLog').innerHTML;
+    $('staffLog').innerHTML=`<div class="log-event"><div class="log-event-head">[${tm}] ${escapeHtml(ev.is_real?'REAL':'FAKE')} / ${escapeHtml(ev.title||'EVENT')}</div><div class="log-event-message">${escapeHtml(ev.message||'')}</div>${ev.keyword?`<div class="staff-keyword">SECRET WORD：<strong>${escapeHtml(ev.keyword)}</strong></div>`:''}</div>`+$('staffLog').innerHTML;
   }
   async function loadLatestStaffEvent(){
     if(!state.room)return;
@@ -312,6 +332,13 @@ function renderPlayerLists(){
   if($('staffAssignMission')) $('staffAssignMission').onclick=staffAssignSelectedMission;
   if($('staffEventCategory')) $('staffEventCategory').onchange=renderStaffEventControl;
   if($('staffSendSelectedEvent')) $('staffSendSelectedEvent').onclick=staffSendSelectedEvent;
+  if($('staffSecretWordBtn')) $('staffSecretWordBtn').onclick=staffSecretWordTrap;
+  if($('hostStaffBtn')) $('hostStaffBtn').onclick=()=>{
+    if(!state.room) return alert('ROOMがまだ作成されていません。');
+    const url=`${location.origin}${location.pathname}?staff=${encodeURIComponent(state.room.code)}`;
+    const w=window.open(url,'_blank');
+    if(!w) location.href=url;
+  };
 
   function openRules(){
     const modal=$('rulesModal');
