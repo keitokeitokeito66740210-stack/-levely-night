@@ -210,21 +210,39 @@ function renderPlayerLists(){
   function escapeHtml(s=''){ return String(s).replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#039;','"':'&quot;'}[c])); }
 
   async function loadStaff(roomCode){
-    if(!requireConfig())return; const {data:room}=await sb.from('rooms').select('*').eq('code',roomCode.toUpperCase()).maybeSingle(); if(!room){alert('ROOMが見つかりません');return;}
-    state.room=room; showView('staffView'); $('staffRoomLabel').textContent='ROOM '+room.code; subscribePlayers(room.id);subscribeRoom(room.id);subscribeEvents(room.id);refreshPlayers();loadLatestStaffEvent();
+    if(!requireConfig()) return;
+    const normalized=String(roomCode||'').trim().toUpperCase();
+    if(!normalized){ alert('STAFF用ROOM CODEがありません'); return; }
+    const {data:room,error}=await sb.from('rooms').select('*').eq('code',normalized).maybeSingle();
+    if(error){ alert('STAFF ROOM読込エラー: '+error.message); return; }
+    if(!room){ alert('ROOMが見つかりません: '+normalized); return; }
+    state.room=room;
+    showView('staffView');
+    $('staffRoomLabel').textContent='ROOM '+room.code;
+    subscribePlayers(room.id);
+    subscribeRoom(room.id);
+    subscribeEvents(room.id);
+    await refreshPlayers();
+    await loadLatestStaffEvent();
   }
-  async function autoRoute(){ const q=new URLSearchParams(location.search); const staff=q.get('staff'); const room=q.get('room'); if(staff){await loadStaff(staff);return;} if(room){$('joinCode').value=room.toUpperCase();} }
+
+  async function autoRoute(){
+    const q=new URLSearchParams(window.location.search);
+    const staff=(q.get('staff')||'').trim();
+    const room=(q.get('room')||'').trim();
+    if(staff){
+      await loadStaff(staff);
+      return;
+    }
+    if(room && $('joinCode')) $('joinCode').value=room.toUpperCase();
+  }
 
   $('createRoomBtn').onclick=createRoom; $('joinRoomBtn').onclick=joinRoom; $('startLiveBtn').onclick=startGame; $('resetBtn').onclick=clearLocal;
   $('copyLinkBtn').onclick=async()=>{const url=`${location.origin}${location.pathname}?room=${state.room.code}`; if(navigator.share){await navigator.share({title:'LEVELY NIGHT',text:'このROOMに参加',url});}else{await navigator.clipboard.writeText(url);toast('リンクをコピーしました');}};
-  document.querySelectorAll('[data-event]').forEach(b=>b.onclick=()=>staffEvent(b.dataset.event)); $('staffRandomBtn').onclick=randomEvent; $('staffFakeBtn').onclick=fakeStaff; $('staffFinalBtn').onclick=finishGame;
+  document.querySelectorAll('[data-event]').forEach(b=>b.onclick=()=>staffEvent(b.dataset.event));
+  $('staffRandomBtn').onclick=randomEvent;
+  $('staffFakeBtn').onclick=fakeStaff;
+  $('staffFinalBtn').onclick=finishGame;
+  if($('staffAssignMission')) $('staffAssignMission').onclick=staffAssignSelectedMission;
   autoRoute();
 })();
-
-
-document.addEventListener('click', async (e)=>{
-  if(e.target && e.target.id==='staffAssignMission'){
-    e.preventDefault();
-    await staffAssignSelectedMission();
-  }
-});
