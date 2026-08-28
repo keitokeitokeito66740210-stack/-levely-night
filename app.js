@@ -112,7 +112,8 @@
       setTimeout(()=>{ const b=$('eventAck'); if(b)b.onclick=renderPlayer; bindVoiceButton(); },0);
       navigator.vibrate?.([120,70,120]);
     }
-    logStaff(`${ev.is_real?'REAL':'FAKE'} / ${ev.title}`);
+    renderStaffCurrentEvent(ev);
+    logStaffEvent(ev);
   }
 
   async function staffEvent(cat){ const ev=byCategory(cat); await pushEvent(ev,true); toast(ev?.title||'EVENT'); }
@@ -149,12 +150,26 @@
   function subscribePlayers(roomId){ sb.channel('players-'+roomId).on('postgres_changes',{event:'*',schema:'public',table:'players',filter:`room_id=eq.${roomId}`},()=>refreshPlayers()).subscribe(); }
   function subscribeRoom(roomId){ sb.channel('room-'+roomId).on('postgres_changes',{event:'UPDATE',schema:'public',table:'rooms',filter:`id=eq.${roomId}`},payload=>{state.room=payload.new;if(state.player)renderPlayer();if(state.room.phase==='final')refreshPlayers();}).subscribe(); }
   function subscribeEvents(roomId){ state.eventSub=sb.channel('events-'+roomId).on('postgres_changes',{event:'INSERT',schema:'public',table:'events',filter:`room_id=eq.${roomId}`},payload=>renderIncomingEvent(payload.new)).subscribe(); }
-  function logStaff(txt){ if(!$('staffLog'))return; const tm=new Date().toLocaleTimeString('ja-JP',{hour:'2-digit',minute:'2-digit',second:'2-digit'}); $('staffLog').innerHTML=`<div>[${tm}] ${escapeHtml(txt)}</div>`+$('staffLog').innerHTML; }
+  function renderStaffCurrentEvent(ev){
+    const el=$('staffCurrentEvent'); if(!el||!ev)return;
+    el.classList.remove('empty');
+    el.innerHTML=`<div class="current-order-head"><strong>${escapeHtml(ev.title||'EVENT')}</strong><span>${ev.is_real?'REAL STAFF':'FAKE'}</span></div><div class="current-order-message">${escapeHtml(ev.message||'')}</div>${ev.keyword?`<div class="staff-keyword">🎙 検知ワード：<strong>${escapeHtml(ev.keyword)}</strong></div>`:''}`;
+  }
+  function logStaffEvent(ev){
+    if(!$('staffLog')||!ev)return;
+    const tm=new Date(ev.created_at||Date.now()).toLocaleTimeString('ja-JP',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+    $('staffLog').innerHTML=`<div class="log-event"><div class="log-event-head">[${tm}] ${escapeHtml(ev.is_real?'REAL':'FAKE')} / ${escapeHtml(ev.title||'EVENT')}</div><div class="log-event-message">${escapeHtml(ev.message||'')}</div></div>`+$('staffLog').innerHTML;
+  }
+  async function loadLatestStaffEvent(){
+    if(!state.room)return;
+    const {data,error}=await sb.from('events').select('*').eq('room_id',state.room.id).order('created_at',{ascending:false}).limit(1);
+    if(!error && data && data[0]) renderStaffCurrentEvent(data[0]);
+  }
   function escapeHtml(s=''){ return String(s).replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#039;','"':'&quot;'}[c])); }
 
   async function loadStaff(roomCode){
     if(!requireConfig())return; const {data:room}=await sb.from('rooms').select('*').eq('code',roomCode.toUpperCase()).maybeSingle(); if(!room){alert('ROOMが見つかりません');return;}
-    state.room=room; showView('staffView'); $('staffRoomLabel').textContent='ROOM '+room.code; subscribePlayers(room.id);subscribeRoom(room.id);subscribeEvents(room.id);refreshPlayers();
+    state.room=room; showView('staffView'); $('staffRoomLabel').textContent='ROOM '+room.code; subscribePlayers(room.id);subscribeRoom(room.id);subscribeEvents(room.id);refreshPlayers();loadLatestStaffEvent();
   }
   async function autoRoute(){ const q=new URLSearchParams(location.search); const staff=q.get('staff'); const room=q.get('room'); if(staff){await loadStaff(staff);return;} if(room){$('joinCode').value=room.toUpperCase();} }
 
