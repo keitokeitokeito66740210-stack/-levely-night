@@ -49,7 +49,48 @@
     if(!sb||!state.room)return; const {data}=await sb.from('players').select('*').eq('room_id',state.room.id).order('created_at'); state.players=data||[];
     renderPlayerLists();
   }
-  function renderPlayerLists(){
+  
+function renderStaffMissionControl(){
+  const playerSel=$('staffMissionPlayer');
+  const missionSel=$('staffMissionSelect');
+  if(!playerSel||!missionSel) return;
+
+  const prevPlayer=playerSel.value;
+  const prevMission=missionSel.value;
+  playerSel.innerHTML=state.players.length
+    ? state.players.map(p=>`<option value="${escapeHtml(p.id)}">${escapeHtml(p.name)}</option>`).join('')
+    : '<option value="">参加者なし</option>';
+
+  const missions=(window.LEVELY_SCENARIOS&&window.LEVELY_SCENARIOS.missions)||[];
+  missionSel.innerHTML=missions.map((m,i)=>`<option value="${escapeHtml(m.id)}">MISSION ${i+1}｜${escapeHtml(m.text)}</option>`).join('');
+
+  if(prevPlayer&&state.players.some(p=>p.id===prevPlayer)) playerSel.value=prevPlayer;
+  if(prevMission&&missions.some(m=>m.id===prevMission)) missionSel.value=prevMission;
+}
+
+async function staffAssignSelectedMission(){
+  if(!state.room) return alert('ROOMが読み込まれていません。');
+  const playerId=$('staffMissionPlayer')?.value;
+  const missionId=$('staffMissionSelect')?.value;
+  const missions=(window.LEVELY_SCENARIOS&&window.LEVELY_SCENARIOS.missions)||[];
+  const mission=missions.find(m=>m.id===missionId);
+  const player=state.players.find(p=>p.id===playerId);
+  if(!player||!mission) return alert('プレイヤーとミッションを選択してください。');
+
+  const {error}=await sb.from('players').update({
+    mission:mission.text,
+    mission_id:mission.id,
+    mission_keyword:mission.keyword||null,
+    status:'joined'
+  }).eq('id',player.id);
+
+  if(error) return alert(error.message);
+  await loadPlayers();
+  renderAll();
+  alert(`${player.name} に新しいシークレットミッションを送りました。`);
+}
+
+function renderPlayerLists(){
     const empty='<p class="muted">まだ参加者はいません。</p>';
     const hostHtml=state.players.length?state.players.map((p,i)=>`<div class="playerrow"><strong>${escapeHtml(p.name)}</strong><small>PLAYER ${i+1}</small></div>`).join(''):empty;
     const staffHtml=state.players.length?state.players.map((p,i)=>{
@@ -66,6 +107,7 @@
     if($('hostPlayers'))$('hostPlayers').innerHTML=hostHtml;
     if($('staffPlayers'))$('staffPlayers').innerHTML=staffHtml;
     if($('hostCount'))$('hostCount').textContent=`${state.players.length} PLAYERS`;
+  renderStaffMissionControl();
   }
 
   async function startGame(){
@@ -178,3 +220,11 @@
   document.querySelectorAll('[data-event]').forEach(b=>b.onclick=()=>staffEvent(b.dataset.event)); $('staffRandomBtn').onclick=randomEvent; $('staffFakeBtn').onclick=fakeStaff; $('staffFinalBtn').onclick=finishGame;
   autoRoute();
 })();
+
+
+document.addEventListener('click', async (e)=>{
+  if(e.target && e.target.id==='staffAssignMission'){
+    e.preventDefault();
+    await staffAssignSelectedMission();
+  }
+});

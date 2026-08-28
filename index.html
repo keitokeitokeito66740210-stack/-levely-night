@@ -77,7 +77,15 @@
       <div class="card">
         <div class="eyebrow">LIVE PLAYERS / SECRET MISSIONS</div>
         <p class="muted">この情報はスタッフ端末だけに表示されます。</p>
-        <div id="staffPlayers" class="players"></div>
+        
+          <div class="staff-mission-picker">
+            <div class="section-title">SECRET MISSION CONTROL</div>
+            <p class="muted">プレイヤーを選び、出したいシークレットミッションを指定できます。</p>
+            <select id="staffMissionPlayer"></select>
+            <select id="staffMissionSelect"></select>
+            <button id="staffAssignMission" class="primary">このミッションを送る</button>
+          </div>
+<div id="staffPlayers" class="players"></div>
       </div>
       <div class="card current-order-card">
         <div class="eyebrow">NOW ON PLAYER SCREENS</div>
