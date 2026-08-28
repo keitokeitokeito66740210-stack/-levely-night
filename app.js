@@ -288,14 +288,19 @@ function renderPlayerLists(){
   }
 
   async function autoRoute(){
-    const q=new URLSearchParams(window.location.search);
-    const staff=(q.get('staff')||'').trim();
-    const room=(q.get('room')||'').trim();
-    if(staff){
-      await loadStaff(staff);
-      return;
+    try{
+      const q=new URLSearchParams(window.location.search);
+      const staff=(q.get('staff')||'').trim();
+      const room=(q.get('room')||'').trim();
+      if(staff){
+        await loadStaff(staff);
+        return;
+      }
+      if(room && $('joinCode')) $('joinCode').value=room.toUpperCase();
+    }catch(err){
+      console.error('STAFF ROUTE ERROR',err);
+      alert('スタッフ画面の読込でエラーが発生しました: '+(err?.message||err));
     }
-    if(room && $('joinCode')) $('joinCode').value=room.toUpperCase();
   }
 
   $('createRoomBtn').onclick=createRoom; $('joinRoomBtn').onclick=joinRoom; $('startLiveBtn').onclick=startGame; $('resetBtn').onclick=clearLocal;
@@ -307,5 +312,11 @@ function renderPlayerLists(){
   if($('staffAssignMission')) $('staffAssignMission').onclick=staffAssignSelectedMission;
   if($('staffEventCategory')) $('staffEventCategory').onchange=renderStaffEventControl;
   if($('staffSendSelectedEvent')) $('staffSendSelectedEvent').onclick=staffSendSelectedEvent;
+  if($('staffCodeBtn')) $('staffCodeBtn').onclick=async()=>{
+    const code=($('staffCodeInput')?.value||'').trim().toUpperCase();
+    if(!code) return alert('ROOM CODEを入力してください。');
+    history.replaceState(null,'',`${location.pathname}?staff=${encodeURIComponent(code)}`);
+    await loadStaff(code);
+  };
   autoRoute();
 })();
