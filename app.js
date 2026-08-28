@@ -14,8 +14,63 @@
   function saveLocal(){ localStorage.setItem('levely_state', JSON.stringify({room:state.room?.code, player:state.player})); }
   function clearLocal(){ localStorage.removeItem('levely_state'); location.href=location.pathname; }
   function requireConfig(){ if(isConfigured) return true; alert('Supabase設定がまだです。config.js を確認してください。'); return false; }
-  function pick(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
-  function byCategory(cat){ const list=library.events.filter(e=>e.cat===cat); return list.length?pick(list):pick(library.events); }
+  function pick(arr){ return arr?.length ? arr[Math.floor(Math.random()*arr.length)] : null; }
+  const editor={rows:[],loaded:false};
+  function enabledEvents(){ return library.events.filter(e=>e._enabled!==false); }
+  function enabledMissions(){ return library.missions.filter(m=>m._enabled!==false); }
+  function byCategory(cat){ const all=enabledEvents(); const list=all.filter(e=>e.cat===cat); return list.length?pick(list):pick(all); }
+
+  function editableRows(){
+    return [
+      ...library.missions.map((m,i)=>({key:'mission:'+(m.id||i),kind:'mission',id:m.id||String(i),cat:'secret_mission',title:'SECRET MISSION '+(i+1),original:m._originalText||m.text||'',ref:m})),
+      ...library.events.map((e,i)=>({key:'event:'+(e.id||i),kind:'event',id:e.id||String(i),cat:e.cat||'event',title:e.title||('EVENT '+(i+1)),original:e._originalMessage||e.message||'',ref:e}))
+    ];
+  }
+  function applyEditor(){
+    editor.rows.forEach(r=>{ if(r.kind==='mission') r.ref.text=r.text; else r.ref.message=r.text; r.ref._enabled=r.enabled; });
+  }
+  async function loadEditor(){
+    const base=editableRows();
+    const {data,error}=await sb.from('mission_overrides').select('*');
+    const map=new Map((data||[]).map(x=>[x.item_key,x]));
+    editor.rows=base.map(r=>({...r,text:map.get(r.key)?.custom_text??r.original,enabled:map.get(r.key)?.enabled??true}));
+    applyEditor(); editor.loaded=true; renderEditor(); renderStaffMissionControl(); renderStaffEventControl();
+    if(error && $('editorStatus')) $('editorStatus').textContent='SQL未設定の可能性があります: '+error.message;
+  }
+  function renderEditor(){
+    const box=$('missionEditorList'); if(!box)return;
+    const cat=$('editorCategory')?.value||'all', q=($('editorSearch')?.value||'').trim().toLowerCase();
+    const cats=[...new Set(library.events.map(e=>e.cat).filter(Boolean))];
+    const cs=$('editorCategory');
+    if(cs && cs.options.length<=2){
+      cats.forEach(c=>{const o=document.createElement('option');o.value=c;o.textContent=eventCategoryLabel(c);cs.appendChild(o);});
+      cs.value=cat;
+    }
+    const rows=editor.rows.filter(r=>(cat==='all'||r.cat===cat)&&(!q||(`${r.title} ${r.text}`).toLowerCase().includes(q)));
+    box.innerHTML=rows.map(r=>`<div class="mission-editor-item" data-key="${escapeHtml(r.key)}">
+      <div class="mission-editor-head"><strong>${escapeHtml(r.title)}</strong><label><input class="ed-enabled" type="checkbox" ${r.enabled?'checked':''}> ON</label></div>
+      <textarea class="ed-text" rows="4">${escapeHtml(r.text)}</textarea>
+      <button type="button" class="secondary ed-reset">この指令だけ元に戻す</button>
+    </div>`).join('')||'<p class="muted">該当なし</p>';
+  }
+  function syncEditor(){
+    document.querySelectorAll('.mission-editor-item').forEach(el=>{const r=editor.rows.find(x=>x.key===el.dataset.key);if(r){r.text=el.querySelector('.ed-text').value;r.enabled=el.querySelector('.ed-enabled').checked;}});
+  }
+  async function saveEditor(){
+    syncEditor();
+    const payload=editor.rows.map(r=>({item_key:r.key,item_type:r.kind,item_id:r.id,category:r.cat,custom_text:r.text,enabled:r.enabled,updated_at:new Date().toISOString()}));
+    const {error}=await sb.from('mission_overrides').upsert(payload,{onConflict:'item_key'});
+    if(error)return alert('保存できません: '+error.message);
+    applyEditor(); renderStaffMissionControl(); renderStaffEventControl();
+    $('editorStatus').textContent='保存しました。次の指令から反映されます。'; toast('MISSION EDITOR / SAVED');
+  }
+  async function resetEditor(){
+    if(!confirm('すべての編集内容を初期状態に戻しますか？'))return;
+    const {error}=await sb.from('mission_overrides').delete().neq('item_key','__never__');
+    if(error)return alert(error.message);
+    editor.rows=editableRows().map(r=>({...r,text:r.original,enabled:true}));applyEditor();renderEditor();renderStaffMissionControl();renderStaffEventControl();
+    $('editorStatus').textContent='初期状態に戻しました。';
+  }
   function missionById(id){ return library.missions.find(m=>m.id===id) || library.missions.find(m=>m.text===state.player?.mission); }
   function currentKeyword(){ const mission=missionById(state.player?.mission_id); return state.lastEvent?.keyword || mission?.keyword || ''; }
 
@@ -32,7 +87,7 @@
     if(!roomCode || !name){toast('ROOM CODEと名前を入力');return;}
     const {data:room,error}=await sb.from('rooms').select('*').eq('code',roomCode).maybeSingle(); if(error||!room){alert('ROOMが見つかりません');return;}
     let deviceId=localStorage.getItem('levely_device')||uuid(); localStorage.setItem('levely_device',deviceId);
-    const mission=pick(library.missions) || {id:'fallback',text:'誰か1人を自然に笑わせてください。'};
+    const mission=pick(enabledMissions()) || {id:'fallback',text:'誰か1人を自然に笑わせてください。'};
     const player={id:uuid(),room_id:room.id,name,device_id:deviceId,mission:mission.text,mission_id:mission.id,mission_keyword:mission.keyword||null,status:'joined',score:0,created_at:new Date().toISOString()};
     const {error:pe}=await sb.from('players').insert(player); if(pe){alert(pe.message);return;}
     state.room=room;state.player=player;saveLocal();showPlayer();subscribeRoom(room.id);subscribePlayers(room.id);subscribeEvents(room.id);renderPlayer();
@@ -74,7 +129,7 @@ function renderStaffEventControl(){
   const eventSel=$('staffEventSelect');
   if(!catSel||!eventSel) return;
 
-  const events=(window.LEVELY_SCENARIOS&&window.LEVELY_SCENARIOS.events)||[];
+  const events=enabledEvents();
   const categories=[...new Set(events.map(e=>e.cat).filter(Boolean))];
 
   const prevCat=catSel.value;
@@ -101,7 +156,7 @@ async function staffSendSelectedEvent(){
   if(!state.room) return alert('ROOMが読み込まれていません。');
 
   const eventId=$('staffEventSelect')?.value;
-  const events=(window.LEVELY_SCENARIOS&&window.LEVELY_SCENARIOS.events)||[];
+  const events=enabledEvents();
   const ev=events.find(e=>e.id===eventId);
 
   if(!ev) return alert('送るイベントを選択してください。');
@@ -121,7 +176,7 @@ function renderStaffMissionControl(){
     ? state.players.map(p=>`<option value="${escapeHtml(p.id)}">${escapeHtml(p.name)}</option>`).join('')
     : '<option value="">参加者なし</option>';
 
-  const missions=(window.LEVELY_SCENARIOS&&window.LEVELY_SCENARIOS.missions)||[];
+  const missions=enabledMissions();
   missionSel.innerHTML=missions.map((m,i)=>`<option value="${escapeHtml(m.id)}">MISSION ${i+1}｜${escapeHtml(m.text)}</option>`).join('');
 
   if(prevPlayer&&state.players.some(p=>p.id===prevPlayer)) playerSel.value=prevPlayer;
@@ -132,7 +187,7 @@ async function staffAssignSelectedMission(){
   if(!state.room) return alert('ROOMが読み込まれていません。');
   const playerId=$('staffMissionPlayer')?.value;
   const missionId=$('staffMissionSelect')?.value;
-  const missions=(window.LEVELY_SCENARIOS&&window.LEVELY_SCENARIOS.missions)||[];
+  const missions=enabledMissions();
   const mission=missions.find(m=>m.id===missionId);
   const player=state.players.find(p=>p.id===playerId);
   if(!player||!mission) return alert('プレイヤーとミッションを選択してください。');
@@ -275,8 +330,8 @@ function renderPlayerLists(){
   }
 
   async function staffEvent(cat){ const ev=byCategory(cat); await pushEvent(ev,true); toast(ev?.title||'EVENT'); }
-  async function randomEvent(){ const ev=pick(library.events); await pushEvent(ev,true); toast('RANDOM / '+(ev?.title||'EVENT')); }
-  async function fakeStaff(){ const list=library.events.filter(e=>['staff','secret','social'].includes(e.cat)); const ev=pick(list); await pushEvent(ev,false); toast('FAKE EVENT'); }
+  async function randomEvent(){ const ev=pick(enabledEvents()); await pushEvent(ev,true); toast('RANDOM / '+(ev?.title||'EVENT')); }
+  async function fakeStaff(){ const list=enabledEvents().filter(e=>['staff','secret','social'].includes(e.cat)); const ev=pick(list); await pushEvent(ev,false); toast('FAKE EVENT'); }
   async function finishGame(){ await sb.from('rooms').update({phase:'final',status:'finished'}).eq('id',state.room.id); await pushEvent({id:'final',cat:'final',title:'FINAL REVEAL',message:'LEVELY NIGHTの結果が確定しました。'},false); }
   function renderFinal(){
     const seed=state.players.length?state.players:[state.player].filter(Boolean); const names=seed.map(p=>p.name); const a=names[0]||'PLAYER';const b=names[1]||a;const c=names[2]||a;
@@ -339,6 +394,7 @@ function renderPlayerLists(){
     subscribeRoom(room.id);
     subscribeEvents(room.id);
     await refreshPlayers();
+    await loadEditor();
     await loadLatestStaffEvent();
   }
 
@@ -368,6 +424,10 @@ function renderPlayerLists(){
   if($('staffEventCategory')) $('staffEventCategory').onchange=renderStaffEventControl;
   if($('staffSendSelectedEvent')) $('staffSendSelectedEvent').onclick=staffSendSelectedEvent;
   if($('staffSecretWordBtn')) $('staffSecretWordBtn').onclick=staffSecretWordTrap;
+  if($('editorCategory')) $('editorCategory').onchange=()=>{syncEditor();renderEditor();};
+  if($('editorSearch')) $('editorSearch').oninput=()=>{syncEditor();renderEditor();};
+  if($('editorSaveAll')) $('editorSaveAll').onclick=saveEditor;
+  if($('editorResetAll')) $('editorResetAll').onclick=resetEditor;
   if($('hostStaffBtn')) $('hostStaffBtn').onclick=()=>{
     if(!state.room) return alert('ROOMがまだ作成されていません。');
     const url=`${location.origin}${location.pathname}?staff=${encodeURIComponent(state.room.code)}`;
@@ -406,8 +466,11 @@ function renderPlayerLists(){
       return;
     }
 
-    if(target.id==='rulesModal'){
-      closeRules();
+    if(target.id==='rulesModal'){ closeRules(); return; }
+    const rb=target.closest?.('.ed-reset');
+    if(rb){
+      const el=rb.closest('.mission-editor-item'), r=editor.rows.find(x=>x.key===el?.dataset.key);
+      if(r){r.text=r.original;r.enabled=true;renderEditor();}
     }
   });
 

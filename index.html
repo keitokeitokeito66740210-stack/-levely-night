@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
   <meta name="theme-color" content="#09090b" />
   <title>LEVELY NIGHT</title>
-  <link rel="stylesheet" href="./styles.css?v=272" />
+  <link rel="stylesheet" href="./styles.css?v=280" />
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
 </head>
@@ -88,6 +88,23 @@
         <h1>TABLE<br>CONTROL</h1>
         <p id="staffRoomLabel">ROOM ------</p>
       </div>
+      <div class="card mission-editor-card">
+        <div class="eyebrow">MISSION EDITOR</div>
+        <p class="muted">ゲームで使う指令を編集・保存できます。OFFにした指令はランダム抽選から除外されます。</p>
+        <div class="editor-toolbar">
+          <select id="editorCategory">
+            <option value="all">ALL</option><option value="secret_mission">SECRET MISSIONS</option>
+          </select>
+          <input id="editorSearch" type="search" placeholder="指令を検索">
+        </div>
+        <div id="missionEditorList" class="mission-editor-list"><p class="muted">読み込み中…</p></div>
+        <div class="editor-actions">
+          <button id="editorSaveAll" class="primary">変更を保存</button>
+          <button id="editorResetAll" class="secondary">すべて初期状態に戻す</button>
+        </div>
+        <p id="editorStatus" class="note"></p>
+      </div>
+
       <div class="card">
         <div class="eyebrow">LIVE PLAYERS / SECRET MISSIONS</div>
         <p class="muted">この情報はスタッフ端末だけに表示されます。</p>
@@ -161,7 +178,7 @@
   <div id="toast" class="toast"></div>
   <script src="./config.js"></script>
   <script src="./scenarios.js?v=251"></script>
-  <script src="./app.js?v=272"></script>
+  <script src="./app.js?v=280"></script>
 
   <div id="rulesModal" class="rules-modal hidden" aria-hidden="true">
     <div class="rules-sheet">

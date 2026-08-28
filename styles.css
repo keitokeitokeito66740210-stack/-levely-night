@@ -249,3 +249,13 @@ a{
     100%{opacity:0}
   }
 }
+
+/* v2.8 MISSION EDITOR */
+.editor-toolbar,.editor-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:12px 0}
+.editor-toolbar select,.editor-toolbar input,.mission-editor-item textarea{width:100%;box-sizing:border-box;padding:12px;border-radius:11px;color:#fff;background:#061124;border:1px solid rgba(77,163,255,.32)}
+.mission-editor-list{max-height:60vh;overflow:auto}
+.mission-editor-item{padding:13px;margin:10px 0;border-radius:14px;background:rgba(9,32,70,.72);border:1px solid rgba(77,163,255,.2)}
+.mission-editor-head{display:flex;justify-content:space-between;gap:10px;align-items:center;margin-bottom:8px}
+.mission-editor-item textarea{resize:vertical;min-height:96px;line-height:1.5}
+.mission-editor-item .ed-reset{width:100%;margin-top:8px}
+@media(max-width:600px){.editor-toolbar,.editor-actions{grid-template-columns:1fr}}
