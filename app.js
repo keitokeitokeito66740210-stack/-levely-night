@@ -50,6 +50,66 @@
     renderPlayerLists();
   }
   
+
+function eventCategoryLabel(cat){
+  const labels={
+    karaoke:'KARAOKE',
+    social:'SOCIAL / POINT',
+    chaos:'CHAOS / NG',
+    staff:'STAFF ATTACK',
+    order:'BLACK ORDER',
+    vote:'VOTE / POINT',
+    duo:'DUO',
+    secret:'SECRET',
+    speed:'SPEED',
+    voice:'VOICE',
+    mind:'MIND',
+    bar:'GUERRILLA / BAR'
+  };
+  return labels[cat]||String(cat||'EVENT').toUpperCase();
+}
+
+function renderStaffEventControl(){
+  const catSel=$('staffEventCategory');
+  const eventSel=$('staffEventSelect');
+  if(!catSel||!eventSel) return;
+
+  const events=(window.LEVELY_SCENARIOS&&window.LEVELY_SCENARIOS.events)||[];
+  const categories=[...new Set(events.map(e=>e.cat).filter(Boolean))];
+
+  const prevCat=catSel.value;
+  const prevEvent=eventSel.value;
+
+  catSel.innerHTML=[
+    '<option value="all">ALL EVENTS</option>',
+    ...categories.map(cat=>`<option value="${escapeHtml(cat)}">${escapeHtml(eventCategoryLabel(cat))}</option>`)
+  ].join('');
+
+  if(prevCat && (prevCat==='all'||categories.includes(prevCat))) catSel.value=prevCat;
+
+  const selectedCat=catSel.value||'all';
+  const filtered=selectedCat==='all' ? events : events.filter(e=>e.cat===selectedCat);
+
+  eventSel.innerHTML=filtered.map((ev,i)=>`
+    <option value="${escapeHtml(ev.id)}">${escapeHtml(ev.title)}｜${escapeHtml(ev.message)}</option>
+  `).join('');
+
+  if(prevEvent && filtered.some(e=>e.id===prevEvent)) eventSel.value=prevEvent;
+}
+
+async function staffSendSelectedEvent(){
+  if(!state.room) return alert('ROOMが読み込まれていません。');
+
+  const eventId=$('staffEventSelect')?.value;
+  const events=(window.LEVELY_SCENARIOS&&window.LEVELY_SCENARIOS.events)||[];
+  const ev=events.find(e=>e.id===eventId);
+
+  if(!ev) return alert('送るイベントを選択してください。');
+
+  await pushEvent(ev,true);
+  await loadLatestStaffEvent();
+}
+
 function renderStaffMissionControl(){
   const playerSel=$('staffMissionPlayer');
   const missionSel=$('staffMissionSelect');
@@ -108,6 +168,7 @@ function renderPlayerLists(){
     if($('staffPlayers'))$('staffPlayers').innerHTML=staffHtml;
     if($('hostCount'))$('hostCount').textContent=`${state.players.length} PLAYERS`;
   renderStaffMissionControl();
+  renderStaffEventControl();
   }
 
   async function startGame(){
@@ -244,5 +305,7 @@ function renderPlayerLists(){
   $('staffFakeBtn').onclick=fakeStaff;
   $('staffFinalBtn').onclick=finishGame;
   if($('staffAssignMission')) $('staffAssignMission').onclick=staffAssignSelectedMission;
+  if($('staffEventCategory')) $('staffEventCategory').onchange=renderStaffEventControl;
+  if($('staffSendSelectedEvent')) $('staffSendSelectedEvent').onclick=staffSendSelectedEvent;
   autoRoute();
 })();

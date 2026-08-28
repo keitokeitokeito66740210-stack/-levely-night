@@ -35,3 +35,25 @@
   border:1px solid rgba(255,255,255,.18);
 }
 .staff-mission-picker button{width:100%;margin-top:8px}
+
+
+.staff-event-picker{
+  margin:18px 0;
+  padding:16px;
+  border:1px solid rgba(255,255,255,.16);
+  border-radius:16px;
+  background:rgba(255,255,255,.04);
+}
+.staff-event-picker select{
+  width:100%;
+  margin:8px 0;
+  padding:12px;
+  border-radius:10px;
+  background:#111;
+  color:#fff;
+  border:1px solid rgba(255,255,255,.18);
+}
+.staff-event-picker button{
+  width:100%;
+  margin-top:8px;
+}

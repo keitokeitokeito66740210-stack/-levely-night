@@ -78,7 +78,15 @@
         <div class="eyebrow">LIVE PLAYERS / SECRET MISSIONS</div>
         <p class="muted">この情報はスタッフ端末だけに表示されます。</p>
         
-          <div class="staff-mission-picker">
+          
+          <div class="staff-event-picker">
+            <div class="section-title">DIRECT EVENT CONTROL</div>
+            <p class="muted">カラオケ・ゲリラ・指差し・NGワードなど、出したいイベントをスタッフが直接選んで送れます。今までのランダムボタンもそのまま使えます。</p>
+            <select id="staffEventCategory"></select>
+            <select id="staffEventSelect"></select>
+            <button id="staffSendSelectedEvent" class="primary">このイベントをプレイヤーに送る</button>
+          </div>
+<div class="staff-mission-picker">
             <div class="section-title">SECRET MISSION CONTROL</div>
             <p class="muted">プレイヤーを選び、出したいシークレットミッションを指定できます。</p>
             <select id="staffMissionPlayer"></select>
