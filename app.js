@@ -224,16 +224,51 @@ function renderPlayerLists(){
     toast('SECRET WORD / '+keyword);
   }
 
+  function incomingAlert(){
+    // Vibration works on supported browsers (not iPhone Safari).
+    try{ navigator.vibrate?.([180,80,180,80,260]); }catch(e){}
+
+    // Reliable web fallback: flash the whole screen without camera permission.
+    let flash=document.getElementById('levelyIncomingFlash');
+    if(!flash){
+      flash=document.createElement('div');
+      flash.id='levelyIncomingFlash';
+      flash.setAttribute('aria-hidden','true');
+      document.body.appendChild(flash);
+    }
+    flash.classList.remove('active');
+    void flash.offsetWidth;
+    flash.classList.add('active');
+    setTimeout(()=>flash.classList.remove('active'),1100);
+  }
+
+  function playerEventPresentation(ev){
+    const hasKeyword=!!ev.keyword;
+    const voiceLike=ev.type==='voice' || ev.title==='VOICE TRAP' || ev.title==='VOICE HUNT';
+    const ngLike=ev.title==='NG WORD' || ev.type==='secret_word' || ev.scenario_id==='secret-word-trap';
+
+    if(hasKeyword && (voiceLike || ngLike)){
+      const penaltyLike=ev.title==='VOICE TRAP' || ev.title==='NG WORD' || ev.type==='secret_word' || ev.scenario_id==='secret-word-trap';
+      return {
+        hidden:true,
+        title:'HIDDEN WORD',
+        message: penaltyLike
+          ? '「ある言葉」を言ったら罰ゲーム。NGワードは非公開。スタッフが会話を監視して判定します。'
+          : '「ある言葉」がトリガーに設定されました。ワードは非公開。スタッフが会話を監視して判定します。'
+      };
+    }
+    return {hidden:false,title:ev.title,message:ev.message};
+  }
+
   function renderIncomingEvent(ev){
     state.lastEvent={...ev,keyword:ev.keyword||null};
     if(state.player){
       stopVoice();
-      const isSecretWord=ev.scenario_id==='secret-word-trap'||ev.type==='secret_word';
-      const voice=ev.keyword&&!isSecretWord?voiceControls(ev.keyword):'';
-      const safeTitle=isSecretWord?'HIDDEN WORD':'';
-      $('playerContent').innerHTML=`<div class="card reveal"><div class="eyebrow">${escapeHtml(safeTitle||ev.title)}</div><div class="mission">${escapeHtml(ev.message)}</div>${voice}<button class="primary" id="eventAck">確認した</button></div>`;
+      const presentation=playerEventPresentation(ev);
+      const voice=ev.keyword&&!presentation.hidden?voiceControls(ev.keyword):'';
+      $('playerContent').innerHTML=`<div class="card reveal"><div class="eyebrow">${escapeHtml(presentation.title)}</div><div class="mission">${escapeHtml(presentation.message)}</div>${voice}<button class="primary" id="eventAck">確認した</button></div>`;
       setTimeout(()=>{ const b=$('eventAck'); if(b)b.onclick=renderPlayer; bindVoiceButton(); },0);
-      navigator.vibrate?.([120,70,120]);
+      incomingAlert();
     }
     renderStaffCurrentEvent(ev);
     logStaffEvent(ev);

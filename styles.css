@@ -218,3 +218,34 @@ a{
 }
 .staff-secret-word button,.host-staff-login button{width:100%;margin-top:8px}
 .host-staff-login .muted{margin:5px 0 0}
+
+
+/* ===== v2.7.2 INCOMING EVENT ALERT ===== */
+#levelyIncomingFlash{
+  position:fixed;
+  inset:0;
+  z-index:99999;
+  pointer-events:none;
+  opacity:0;
+  background:rgba(77,163,255,.92);
+}
+#levelyIncomingFlash.active{
+  animation:levelyIncomingFlash 1.05s ease-out;
+}
+@keyframes levelyIncomingFlash{
+  0%{opacity:0}
+  10%{opacity:.96}
+  22%{opacity:.10}
+  36%{opacity:.92}
+  52%{opacity:.08}
+  68%{opacity:.72}
+  100%{opacity:0}
+}
+@media (prefers-reduced-motion: reduce){
+  #levelyIncomingFlash.active{animation:levelyIncomingFlashReduced .55s ease-out}
+  @keyframes levelyIncomingFlashReduced{
+    0%{opacity:0}
+    20%{opacity:.75}
+    100%{opacity:0}
+  }
+}
