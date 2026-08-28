@@ -327,10 +327,27 @@ function renderPlayerLists(){
     modal.setAttribute('aria-hidden','true');
     document.body.style.overflow='';
   }
-  if($('rulesOpenBtn')) $('rulesOpenBtn').onclick=openRules;
-  if($('rulesCloseBtn')) $('rulesCloseBtn').onclick=closeRules;
-  if($('rulesCloseBottomBtn')) $('rulesCloseBottomBtn').onclick=closeRules;
-  if($('rulesModal')) $('rulesModal').onclick=(e)=>{if(e.target.id==='rulesModal')closeRules();};
+
+  document.addEventListener('click',(e)=>{
+    const target=e.target;
+    if(!target) return;
+
+    if(target.closest?.('#rulesOpenBtn')){
+      e.preventDefault();
+      openRules();
+      return;
+    }
+
+    if(target.closest?.('#rulesCloseBtn') || target.closest?.('#rulesCloseBottomBtn')){
+      e.preventDefault();
+      closeRules();
+      return;
+    }
+
+    if(target.id==='rulesModal'){
+      closeRules();
+    }
+  });
 
   if($('staffCodeBtn')) $('staffCodeBtn').onclick=async()=>{
     const code=($('staffCodeInput')?.value||'').trim().toUpperCase();
