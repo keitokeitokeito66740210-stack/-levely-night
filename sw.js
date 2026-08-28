@@ -1,4 +1,4 @@
-const CACHE_NAME = 'levely-night-v303';
+const CACHE_NAME = 'levely-night-v304';
 const APP_SHELL = [
   './',
   './index.html',
@@ -8,9 +8,9 @@ const APP_SHELL = [
   './mission-editor.html',
   './mission-editor.js',
   './manifest.webmanifest',
-  './icons/levely-v-logo-v3-180.png',
-  './icons/levely-v-logo-v3-192.png',
-  './icons/levely-v-logo-v3-512.png',
+  './levely-v-logo-v3-180.png',
+  './levely-v-logo-v3-192.png',
+  './levely-v-logo-v3-512.png',
 ];
 
 self.addEventListener('install', event => {
